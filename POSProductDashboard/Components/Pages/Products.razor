@@ -1,0 +1,255 @@
+@page "/products"
+@page "/products-page"
+@inject ProductService ProductService
+
+<PageTitle>Product Management - CorePOS</PageTitle>
+
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Product Management</h1>
+        <p class="text-sm text-slate-500 mt-1">Maintain POS SKU catalog, wholesale costs, and retail prices.</p>
+    </div>
+
+    <!-- Filter & Action Bar -->
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <!-- Search Input -->
+        <div class="relative flex-1">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.3-4.3" />
+                </svg>
+            </div>
+            <input type="text"
+                   @bind="SearchQuery"
+                   @bind:event="oninput"
+                   placeholder="Search UPC or description..."
+                   class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-colors shadow-sm" />
+        </div>
+
+        <div class="flex items-center gap-3">
+            <!-- Status Filter -->
+            <div class="relative min-w-[150px]">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                    </svg>
+                </div>
+                <select @bind="SelectedStatusFilter"
+                        class="w-full pl-9 pr-8 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-colors appearance-none shadow-sm cursor-pointer">
+                    <option value="All">All Statuses</option>
+                    <option value="Active">Active</option>
+                    <option value="Needs Review">Needs Review</option>
+                    <option value="Draft">Draft</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m6 9 6 6 6-6" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Add Product Button -->
+            <button type="button"
+                    @onclick="OpenAddModal"
+                    class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors whitespace-nowrap">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14M5 12h14" />
+                </svg>
+                <span>Add Product</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Products Table Card -->
+    <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-100 bg-slate-50/50">
+                        <th class="py-3.5 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider w-44">UPC</th>
+                        <th class="py-3.5 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">Description</th>
+                        <th class="py-3.5 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right w-28">Cost</th>
+                        <th class="py-3.5 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right w-32">Selling Price</th>
+                        <th class="py-3.5 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-center w-36">Status</th>
+                        <th class="py-3.5 px-6 text-xs font-semibold text-slate-400 uppercase tracking-wider text-center w-36">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @if (!FilteredProducts.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="py-12 text-center text-sm text-slate-500">
+                                No products found matching your search criteria.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var product in FilteredProducts)
+                        {
+                            <tr class="hover:bg-slate-50/60 transition-colors">
+                                <td class="py-4 px-6 text-xs font-mono font-medium text-slate-500 whitespace-nowrap">
+                                    @product.UPC
+                                </td>
+                                <td class="py-4 px-6 text-sm font-medium text-slate-900">
+                                    @product.Description
+                                </td>
+                                <td class="py-4 px-6 text-sm font-medium text-slate-700 text-right whitespace-nowrap">
+                                    $@product.Cost.ToString("F2")
+                                </td>
+                                <td class="py-4 px-6 text-sm font-semibold text-slate-900 text-right whitespace-nowrap">
+                                    $@product.SellingPrice.ToString("F2")
+                                </td>
+                                <td class="py-4 px-6 text-center whitespace-nowrap">
+                                    @if (product.Status == "Active")
+                                    {
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600">
+                                            Active
+                                        </span>
+                                    }
+                                    else if (product.Status == "Needs Review")
+                                    {
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-600">
+                                            Needs Review
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+                                            @product.Status
+                                        </span>
+                                    }
+                                </td>
+                                <td class="py-4 px-6 text-center whitespace-nowrap">
+                                    <div class="inline-flex items-center justify-center gap-3">
+                                        <button type="button"
+                                                @onclick="() => OpenEditModal(product)"
+                                                class="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors">
+                                            Edit
+                                        </button>
+                                        <button type="button"
+                                                @onclick="() => OpenDeleteModal(product)"
+                                                class="text-sm font-medium text-rose-500 hover:text-rose-700 transition-colors">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Product Modal -->
+<AddProductModal IsOpen="IsAddModalOpen"
+                 OnSave="HandleAddProduct"
+                 OnCancel="CloseModals" />
+
+<!-- Edit Product Modal -->
+<EditProductModal IsOpen="IsEditModalOpen"
+                  Product="SelectedProduct"
+                  OnUpdate="HandleUpdateProduct"
+                  OnCancel="CloseModals" />
+
+<!-- Delete Product Modal -->
+<DeleteProductModal IsOpen="IsDeleteModalOpen"
+                    ProductToDelete="SelectedProduct"
+                    OnDeleteConfirmed="HandleDeleteProduct"
+                    OnCancel="CloseModals" />
+
+@code {
+    private List<Product> AllProducts = new();
+    private string SearchQuery = string.Empty;
+    private string SelectedStatusFilter = "All";
+
+    private bool IsAddModalOpen = false;
+    private bool IsEditModalOpen = false;
+    private bool IsDeleteModalOpen = false;
+    private Product? SelectedProduct;
+
+    protected override void OnInitialized()
+    {
+        LoadProducts();
+    }
+
+    private void LoadProducts()
+    {
+        AllProducts = ProductService.GetAll();
+    }
+
+    private IEnumerable<Product> FilteredProducts
+    {
+        get
+        {
+            var query = AllProducts.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(SearchQuery))
+            {
+                var term = SearchQuery.Trim().ToLowerInvariant();
+                query = query.Where(p => p.Description.ToLowerInvariant().Contains(term) ||
+                                         p.UPC.ToLowerInvariant().Contains(term));
+            }
+
+            if (SelectedStatusFilter != "All")
+            {
+                query = query.Where(p => p.Status.Equals(SelectedStatusFilter, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return query;
+        }
+    }
+
+    private void OpenAddModal()
+    {
+        IsAddModalOpen = true;
+    }
+
+    private void OpenEditModal(Product product)
+    {
+        SelectedProduct = product;
+        IsEditModalOpen = true;
+    }
+
+    private void OpenDeleteModal(Product product)
+    {
+        SelectedProduct = product;
+        IsDeleteModalOpen = true;
+    }
+
+    private void CloseModals()
+    {
+        IsAddModalOpen = false;
+        IsEditModalOpen = false;
+        IsDeleteModalOpen = false;
+        SelectedProduct = null;
+    }
+
+    private void HandleAddProduct(Product newProduct)
+    {
+        ProductService.Add(newProduct);
+        LoadProducts();
+        CloseModals();
+    }
+
+    private void HandleUpdateProduct(Product updatedProduct)
+    {
+        if (SelectedProduct != null)
+        {
+            ProductService.Update(SelectedProduct.UPC, updatedProduct);
+            LoadProducts();
+        }
+        CloseModals();
+    }
+
+    private void HandleDeleteProduct(Product product)
+    {
+        ProductService.Delete(product.UPC);
+        LoadProducts();
+        CloseModals();
+    }
+}
