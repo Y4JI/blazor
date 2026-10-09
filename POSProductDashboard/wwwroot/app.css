@@ -1,28 +1,27 @@
-/* Base CSS Reset & Design Tokens from Figma */
+/* Custom styles and NavLink active states complementing Tailwind CSS */
 :root {
-    --bg-page: #f8fafc;
-    --bg-surface: #ffffff;
-    --border-color: #e2e8f0;
-    --text-primary: #0f172a;
-    --text-secondary: #64748b;
-    --primary-blue: #2563eb;
-    --primary-blue-hover: #1d4ed8;
-    --danger-red: #ef4444;
-    --success-green: #10b981;
-    --warning-amber: #f59e0b;
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
 }
 
 body {
     font-family: var(--font-family);
-    background-color: var(--bg-page);
-    color: var(--text-primary);
-    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    margin: 0;
+    padding: 0;
+}
+
+/* Blazor NavLink active styling */
+a.nav-item-link.active {
+    background-color: #eff6ff !important; /* bg-blue-50 */
+    color: #2563eb !important; /* text-blue-600 */
+    font-weight: 500 !important;
+}
+
+a.nav-item-link.active svg {
+    color: #2563eb !important;
+}
+
+/* Subtle transitions */
+.transition-smooth {
+    transition: all 0.15s ease-in-out;
 }
