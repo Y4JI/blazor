@@ -1,0 +1,39 @@
+@page "/edit-product-modal"
+@inject ProductService ProductService
+@inject NavigationManager Navigation
+
+<PageTitle>Edit Product Modal - CorePOS</PageTitle>
+
+<!-- We render the Products page in background and open the Edit Product modal preloaded with the Figma sample product -->
+<div class="relative">
+    <div class="opacity-40 pointer-events-none select-none filter blur-[1px]">
+        <Products />
+    </div>
+
+    <EditProductModal IsOpen="true"
+                      Product="SampleProduct"
+                      OnUpdate="HandleUpdate"
+                      OnCancel="HandleCancel" />
+</div>
+
+@code {
+    private Product SampleProduct = new Product
+    {
+        UPC = "049000042566",
+        Description = "Coca-Cola Classic 12oz",
+        Cost = 0.89m,
+        SellingPrice = 1.49m,
+        Status = "Active"
+    };
+
+    private void HandleUpdate(Product updatedProduct)
+    {
+        ProductService.Update(SampleProduct.UPC, updatedProduct);
+        Navigation.NavigateTo("products");
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo("products");
+    }
+}

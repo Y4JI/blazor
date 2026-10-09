@@ -1,0 +1,39 @@
+@page "/add-product-modal"
+@inject ProductService ProductService
+@inject NavigationManager Navigation
+
+<PageTitle>Add Product Modal - CorePOS</PageTitle>
+
+<!-- We render the Products page in background and open the Add Product modal -->
+<div class="relative">
+    <div class="opacity-40 pointer-events-none select-none filter blur-[1px]">
+        <Products />
+    </div>
+
+    <AddProductModal IsOpen="true"
+                     InitialProduct="SampleProduct"
+                     OnSave="HandleSave"
+                     OnCancel="HandleCancel" />
+</div>
+
+@code {
+    private Product SampleProduct = new Product
+    {
+        UPC = "072225243105",
+        Description = "Organic Honey Almond Granola (16oz)",
+        Cost = 3.20m,
+        SellingPrice = 5.99m,
+        Status = "Active"
+    };
+
+    private void HandleSave(Product product)
+    {
+        ProductService.Add(product);
+        Navigation.NavigateTo("products");
+    }
+
+    private void HandleCancel()
+    {
+        Navigation.NavigateTo("products");
+    }
+}
