@@ -1,0 +1,68 @@
+@using POSProductDashboard.Models
+
+@if (IsOpen && ProductToDelete != null)
+{
+    <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-50 flex items-center justify-center p-4" @onclick="HandleBackdropClick">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 max-w-md w-full p-6 text-center transform transition-all" @onclick:stopPropagation="true">
+            <!-- Warning Icon -->
+            <div class="w-12 h-12 rounded-full bg-rose-50 text-rose-500 mx-auto flex items-center justify-center mb-3">
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+            </div>
+
+            <!-- Title & Subtitle -->
+            <h3 class="text-lg font-bold text-slate-900">Delete Product</h3>
+            <p class="text-sm text-slate-500 mt-1 mb-4">Are you sure you want to delete this product?</p>
+
+            <!-- Product Preview Box -->
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 text-left mb-3">
+                <p class="text-sm font-bold text-slate-900 truncate">@ProductToDelete.Description</p>
+                <p class="text-xs text-slate-400 font-mono mt-1">UPC: @ProductToDelete.UPC</p>
+            </div>
+
+            <p class="text-xs text-slate-400 mb-6">This action cannot be undone.</p>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-3">
+                <button type="button"
+                        @onclick="Cancel"
+                        class="flex-1 py-2.5 px-4 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+                    Cancel
+                </button>
+                <button type="button"
+                        @onclick="ConfirmDelete"
+                        class="flex-1 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-sm font-medium text-white rounded-lg shadow-sm transition-colors">
+                    Delete Product
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public Product? ProductToDelete { get; set; }
+    [Parameter] public EventCallback<Product> OnDeleteConfirmed { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private async Task HandleBackdropClick()
+    {
+        await Cancel();
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (ProductToDelete != null)
+        {
+            await OnDeleteConfirmed.InvokeAsync(ProductToDelete);
+        }
+    }
+}
